@@ -1,8 +1,7 @@
 local colors = {
   inactive = { 60, 60, 60 },
   active = { 255, 255, 255 },
-  selected = { 190, 255, 190 },
-  selected_inactive = { 128, 100, 100 },
+  selected = { 150, 255, 150 }
 }
 
 local scale = 1
@@ -13,13 +12,13 @@ local field = {}
 local time_since_last_add = 0
 local starting_adds_left = 0
 local starting_adds_interval = 0.1
-local adds_interval = 10
+local adds_interval = 4
 
 local time_since_floating_figure_update = 0
 local floating_figure_update_interval = 0.05
 
 local time_since_floating_check_request = nil
-local floating_check_interval = 1
+local floating_check_interval = 0.5
 
 local figures = {}
 
@@ -70,8 +69,12 @@ love.resize = function(width, height)
 end
 
 
-function draw_rect(x, y, color)
-  love.graphics.setColor(color)
+function draw_rect(x, y, color, highlight)
+  if highlight then
+    love.graphics.setColor(highlight)
+  else
+    love.graphics.setColor(color)
+  end
   local d = scale / 20
   love.graphics.rectangle("fill", x * scale + d, y * scale + d, scale - d * 2, scale - d * 2)
   love.graphics.setColor(color[1] / 2, color[2] / 2, color[3] / 2)
@@ -128,12 +131,14 @@ function love.draw()
       local figure_x = x - x_selection + 1
       local figure_y = y_selection and (y - y_selection + 1)
       local figure_matches = false
+      local highlight = nil
       if figure and figure_x > 0 and figure_x <= #figure[1] and figure_y > 0 and figure_y <= #figure then
         if figure[figure_y][figure_x] == Value.Solid then
           if field[y][x] == Value.Solid then
             color = colors.selected
           else
-            color = colors.selected_inactive
+            color = colors.inactive
+            highlight = colors.selected
           end
           figure_matches = true
         end
@@ -145,7 +150,7 @@ function love.draw()
           color = colors.inactive
         end
       end
-      draw_rect(x - 1, y - 1, color);
+      draw_rect(x - 1, y - 1, color, highlight);
     end
   end
 
@@ -211,7 +216,7 @@ function love.update(dt)
 end
 
 function love.load()
-  math.randomseed(42)
+  math.randomseed(4242)
   start_game()
   love.window.setMode(1024, 768, { resizable = true })
   local width, height = love.graphics.getDimensions()
@@ -295,7 +300,7 @@ function choose_figure()
     end
   end
   --end
-  figure = figures[1][1]
+  --figure = figures[1][1]
 end
 
 function generate_figure()
