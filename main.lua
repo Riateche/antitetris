@@ -18,13 +18,15 @@ local adds_interval = 10
 local time_since_floating_figure_update = 0
 local floating_figure_update_interval = 0.05
 
+local time_since_floating_check_request = nil
+local floating_check_interval = 1
+
 local figures = {}
 
 local Value = {
   Free = 0,
   Solid = 1,
   Floating = 2,
-  FloatingSelected = 4,
   SolidMarked = 3,
 }
 
@@ -198,6 +200,14 @@ function love.update(dt)
       end
     end
   end
+  if time_since_floating_check_request then
+    time_since_floating_check_request = time_since_floating_check_request + dt
+    if time_since_floating_check_request > floating_check_interval then
+      time_since_floating_check_request = nil
+      mark_orphans()
+    end
+  end
+
 end
 
 function love.load()
@@ -240,7 +250,8 @@ function add_to_field()
     end
   end
   table.insert(field, new_line)
-  mark_orphans()
+  time_since_floating_check_request = 0
+  -- mark_orphans()
 end
 
 function round(x) return math.floor(x + 0.5) end
@@ -396,8 +407,9 @@ function remove_figure()
       end
     end
   end
-  mark_orphans()
-  time_since_floating_figure_update = 0
+  --mark_orphans()
+  time_since_floating_check_request = 0
+  --time_since_floating_figure_update = 0
   generate_figure()
   return true
 end
