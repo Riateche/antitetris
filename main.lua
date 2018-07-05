@@ -17,16 +17,12 @@ function draw_block(x, y, image)
 end
 
 
-
-
-
-local field_size = { width = 10, height = 20 }
 local field = {}
 
 local time_since_last_add = 0
 local starting_adds_left = 0
 local starting_adds_interval = 0.1
-local adds_interval = 4
+local adds_interval = 1
 
 local time_since_floating_figure_update = 0
 local floating_figure_update_interval = 0.05
@@ -66,6 +62,7 @@ figures[4] = {
 local figure = nil
 
 function start_game()
+  local field_size = { width = 10, height = 20 }
   for y = 1, field_size.height do
     field[y] = {}
     for x = 1, field_size.width do
@@ -77,8 +74,8 @@ function start_game()
 end
 
 love.resize = function(width, height)
-  local scale_x = width / (field_size.width + 5)
-  local scale_y = height / field_size.height
+  local scale_x = width / (#field[1] + 5)
+  local scale_y = height / #field
   scale = math.min(scale_x, scale_y)
 end
 
@@ -140,55 +137,20 @@ function love.draw()
     y_selection = calc_selection_y()
   end
 
-  for y = 1, field_size.height do
-    for x = 1, field_size.width do
+  for y = 1, #field do
+    for x = 1, #field[y] do
       local figure_x = x - x_selection + 1
       local figure_y = y_selection and (y - y_selection + 1)
-      --local figure_matches = false
-      --local highlight = nil
-
       local image = field[y][x] == Value.Free and empty_block_image or solid_block_image
       draw_block(x - 1, y - 1, image)
-
-
       if figure and figure_x > 0 and figure_x <= #figure[1] and figure_y > 0 and figure_y <= #figure then
         if figure[figure_y][figure_x] == Value.Solid then
           draw_block(x - 1, y - 1, highlight_block_image)
-          --if field[y][x] == Value.Solid then
-          --  color = colors.selected
-          --else
-          --  color = colors.inactive
-          --  highlight = colors.selected
-          --end
-          --figure_matches = true
         end
-      end
-      --if not figure_matches then
-      --  if field[y][x] ~= Value.Free then
-      --    color = colors.active
-      --  else
-      --    color = colors.inactive
-      --  end
-      --end
-      --draw_rect(x - 1, y - 1, color, highlight);
-    end
-  end
-
-  if figure then
-    for y = 1, #figure do
-      for x = 1, #figure[1] do
-        local color
-        if figure[y][x] == Value.Solid then
-          color = colors.selected
-        else
-          color = colors.inactive
-        end
-        draw_rect(x + field_size.width, y - 1, color);
       end
     end
   end
 end
-
 
 function love.update(dt)
   time_since_last_add = time_since_last_add + dt
@@ -211,16 +173,23 @@ function love.update(dt)
   time_since_floating_figure_update = time_since_floating_figure_update + dt
   if time_since_floating_figure_update > floating_figure_update_interval then
     time_since_floating_figure_update = time_since_floating_figure_update - floating_figure_update_interval
-    for x = 1, field_size.width do
+    for x = 1, #field[1] do
       if field[1][x] == Value.Floating then
+        -- float outside of the field
         field[1][x] = Value.Free
       end
     end
-    for y = 2, field_size.height do
-      for x = 1, field_size.width do
+    for y = 2, #field do
+      for x = 1, #field[y] do
         if field[y][x] == Value.Floating then
-          field[y - 1][x] = Value.Floating
-          field[y][x] = Value.Free
+          if field[y - 1][x] == Value.Free then
+            -- keep floating up
+            field[y - 1][x] = Value.Floating
+            field[y][x] = Value.Free
+          else
+            -- can't float! become solid
+            field[y][x] = Value.Solid
+          end
         end
       end
     end
@@ -244,7 +213,7 @@ function love.load()
 end
 
 function is_empty_line(y)
-  for x = 1, field_size.width do
+  for x = 1, #field[y] do
     if field[y][x] ~= Value.Free then
       return false
     end
@@ -253,21 +222,17 @@ function is_empty_line(y)
 end
 
 function add_to_field()
-  local has_empty_line = false
-  for y = field_size.height, 1, -1 do
-    if is_empty_line(y) then
-      table.remove(field, y)
-      has_empty_line = true
-      break
+  for x = 1, #field[1] do
+    if field[1][x] == Value.Solid then
+      -- game over
+      start_game()
+      return
     end
   end
-  if not has_empty_line then
-    -- game over
-    start_game()
-    return
-  end
+  table.remove(field, 1)
+
   new_line = {}
-  for x = 1, field_size.width do
+  for x = 1, #field[1] do
     if math.random() > 0.2 then
       new_line[x] = Value.Solid
     else
@@ -276,7 +241,6 @@ function add_to_field()
   end
   table.insert(field, new_line)
   time_since_floating_check_request = 0
-  -- mark_orphans()
 end
 
 function round(x) return math.floor(x + 0.5) end
@@ -284,7 +248,7 @@ function round(x) return math.floor(x + 0.5) end
 function is_removable_figure()
   local original_figure = figure
   for _ = 1, 4 do
-    for x = 1, field_size.width do
+    for x = 1, #field[1] do
       x_selection = x
       fix_x_selection_bounds()
       if can_remove_figure() then
@@ -299,19 +263,6 @@ function is_removable_figure()
 end
 
 function choose_figure()
-  --local start_d
-  --local roll = math.random()
-  --if roll < 0.2 then
-  --  start_d = 1
-  --elseif roll < 0.3 then
-  --  start_d = 2
-  --elseif roll < 0.4 then
-  --  start_d = 3
-  --else
-  --start_d = 4
-  --end
-  --local d = start_d
-  --for d = start_d, 1, -1 do
   local d = 4
   for _ = 1, 500 do
     figure = figures[d][math.random(1, #figures[d])]
@@ -319,8 +270,6 @@ function choose_figure()
       return
     end
   end
-  --end
-  --figure = figures[1][1]
 end
 
 function generate_figure()
@@ -379,7 +328,7 @@ function can_remove_figure()
 end
 
 function field_get_item(x, y)
-  if x < 1 or x > field_size.width or y < 1 or y > field_size.height then
+  if x < 1 or x > #field[1] or y < 1 or y > #field then
     return -1
   end
   return field[y][x]
@@ -387,15 +336,15 @@ end
 
 function mark_orphans()
   local marked = {}
-  for x = 1, field_size.width do
-    if field[field_size.height][x] == Value.Solid then
-      field[field_size.height][x] = Value.SolidMarked
+  for x = 1, #field[1] do
+    if field[#field][x] == Value.Solid then
+      field[#field][x] = Value.SolidMarked
     end
   end
   while true do
     local changed = false
-    for y = 1, field_size.height do
-      for x = 1, field_size.width do
+    for y = 1, #field do
+      for x = 1, #field[y] do
         if field[y][x] == Value.Solid then
           if field_get_item(x, y-1) == Value.SolidMarked or
              field_get_item(x, y+1) == Value.SolidMarked or
@@ -411,8 +360,8 @@ function mark_orphans()
       break
     end
   end
-  for y = 1, field_size.height do
-    for x = 1, field_size.width do
+  for y = 1, #field do
+    for x = 1, #field[1] do
       if field[y][x] == Value.Solid then
         field[y][x] = Value.Floating
       elseif field[y][x] == Value.SolidMarked then
@@ -432,9 +381,7 @@ function remove_figure()
       end
     end
   end
-  --mark_orphans()
   time_since_floating_check_request = 0
-  --time_since_floating_figure_update = 0
   generate_figure()
   return true
 end
