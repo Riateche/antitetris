@@ -11,10 +11,22 @@ local solid_block_image = love.graphics.newImage("assets/solid.png")
 local empty_block_image = love.graphics.newImage("assets/empty.png")
 local highlight_block_image = love.graphics.newImage("assets/highlight.png")
 
+local font = love.graphics.newFont(14)
+love.graphics.setFont(font)
+local field_offset = { x = 0, y = font:getHeight() }
+
 function draw_block(x, y, image)
   love.graphics.setColor(255, 255, 255)
-  love.graphics.draw(image, x * scale, y * scale, 0, scale / image:getWidth(), scale / image:getHeight())
+  love.graphics.draw(
+    image,
+    field_offset.x + x * scale,
+    field_offset.y + y * scale,
+    0,
+    scale / image:getWidth(),
+    scale / image:getHeight())
 end
+
+
 
 
 local field = {}
@@ -74,26 +86,10 @@ function start_game()
 end
 
 love.resize = function(width, height)
-  local scale_x = width / (#field[1] + 5)
-  local scale_y = height / #field
+  local scale_x = width / #field[1]
+  local scale_y = (height - field_offset.y) / #field
   scale = math.min(scale_x, scale_y)
-end
-
-
-function draw_rect(x, y, color, highlight)
-  if highlight then
-    love.graphics.setColor(highlight)
-  else
-    love.graphics.setColor(color)
-  end
-  local d = scale / 20
-  love.graphics.rectangle("fill", x * scale + d, y * scale + d, scale - d * 2, scale - d * 2)
-  love.graphics.setColor(color[1] / 2, color[2] / 2, color[3] / 2)
-  d = d + scale / 10
-  love.graphics.rectangle("fill", x * scale + d, y * scale + d, scale - d * 2, scale - d * 2)
-  love.graphics.setColor(color)
-  d = d + scale / 10
-  love.graphics.rectangle("fill", x * scale + d, y * scale + d, scale - d * 2, scale - d * 2)
+  field_offset.x = (width - #field[1] * scale) / 2
 end
 
 
@@ -131,7 +127,6 @@ end
 
 
 function love.draw()
-  local color
   local y_selection = nil
   if figure then
     y_selection = calc_selection_y()
@@ -150,6 +145,8 @@ function love.draw()
       end
     end
   end
+
+  love.graphics.printf("42", field_offset.x, 0, scale * #field[1], "right")
 end
 
 function love.update(dt)
