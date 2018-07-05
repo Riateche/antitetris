@@ -6,6 +6,20 @@ local colors = {
 
 local scale = 1
 
+
+local solid_block_image = love.graphics.newImage("assets/solid.png")
+local empty_block_image = love.graphics.newImage("assets/empty.png")
+local highlight_block_image = love.graphics.newImage("assets/highlight.png")
+
+function draw_block(x, y, image)
+  love.graphics.setColor(255, 255, 255)
+  love.graphics.draw(image, x * scale, y * scale, 0, scale / image:getWidth(), scale / image:getHeight())
+end
+
+
+
+
+
 local field_size = { width = 10, height = 20 }
 local field = {}
 
@@ -130,27 +144,33 @@ function love.draw()
     for x = 1, field_size.width do
       local figure_x = x - x_selection + 1
       local figure_y = y_selection and (y - y_selection + 1)
-      local figure_matches = false
-      local highlight = nil
+      --local figure_matches = false
+      --local highlight = nil
+
+      local image = field[y][x] == Value.Free and empty_block_image or solid_block_image
+      draw_block(x - 1, y - 1, image)
+
+
       if figure and figure_x > 0 and figure_x <= #figure[1] and figure_y > 0 and figure_y <= #figure then
         if figure[figure_y][figure_x] == Value.Solid then
-          if field[y][x] == Value.Solid then
-            color = colors.selected
-          else
-            color = colors.inactive
-            highlight = colors.selected
-          end
-          figure_matches = true
+          draw_block(x - 1, y - 1, highlight_block_image)
+          --if field[y][x] == Value.Solid then
+          --  color = colors.selected
+          --else
+          --  color = colors.inactive
+          --  highlight = colors.selected
+          --end
+          --figure_matches = true
         end
       end
-      if not figure_matches then
-        if field[y][x] ~= Value.Free then
-          color = colors.active
-        else
-          color = colors.inactive
-        end
-      end
-      draw_rect(x - 1, y - 1, color, highlight);
+      --if not figure_matches then
+      --  if field[y][x] ~= Value.Free then
+      --    color = colors.active
+      --  else
+      --    color = colors.inactive
+      --  end
+      --end
+      --draw_rect(x - 1, y - 1, color, highlight);
     end
   end
 
@@ -216,7 +236,7 @@ function love.update(dt)
 end
 
 function love.load()
-  math.randomseed(4242)
+  math.randomseed(os.time())
   start_game()
   love.window.setMode(1024, 768, { resizable = true })
   local width, height = love.graphics.getDimensions()
