@@ -46,7 +46,10 @@ function love.draw()
       local figure_y = selection_pos and (y - selection_pos.y + 1)
       local image = game.field[y][x] == game.Value.Free and empty_block_image or solid_block_image
       draw_block(x - 1, y - 1, image)
-      if game.current_figure and figure_x > 0 and figure_x <= #game.current_figure[1] and figure_y > 0 and figure_y <= #game.current_figure then
+      if game.current_figure and
+         figure_x > 0 and
+         figure_x <= #game.current_figure[1] and
+         figure_y > 0 and figure_y <= #game.current_figure then
         if game.current_figure[figure_y][figure_x] == game.Value.Solid then
           draw_block(x - 1, y - 1, highlight_block_image)
         end

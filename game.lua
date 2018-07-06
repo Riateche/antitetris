@@ -99,7 +99,7 @@ local function add_to_field()
   end
   table.remove(game.field, 1)
 
-  new_line = {}
+  local new_line = {}
   for x = 1, #game.field[1] do
     if math.random() > 0.2 then
       new_line[x] = Value.Solid
@@ -149,7 +149,6 @@ local function is_removable_figure()
 end
 
 local function mark_orphans()
-  local marked = {}
   for x = 1, #game.field[1] do
     if game.field[#game.field][x] == Value.Solid then
       game.field[#game.field][x] = Value.SolidMarked
@@ -267,7 +266,7 @@ function game.generate_figure()
 end
 
 function game.rotate_figure()
-  new_figure = {}
+  local new_figure = {}
   for x = 1, #game.current_figure[1] do
     local line = {}
     for y = 1, #game.current_figure do
@@ -293,7 +292,8 @@ function game.can_remove_figure()
   end
   for y = 1, #game.current_figure do
     for x = 1, #game.current_figure[1] do
-      if game.current_figure[y][x] == Value.Solid and game.field[y + y_selection - 1][x + x_selection - 1] ~= game.current_figure[y][x] then
+      if game.current_figure[y][x] == Value.Solid and
+         game.field[y + y_selection - 1][x + x_selection - 1] ~= game.current_figure[y][x] then
         return false
       end
     end
