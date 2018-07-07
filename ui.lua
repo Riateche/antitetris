@@ -8,10 +8,11 @@ local solid_block_image = love.graphics.newImage("assets/solid.png")
 local empty_block_image = love.graphics.newImage("assets/empty.png")
 local highlight_block_image = love.graphics.newImage("assets/highlight.png")
 
-local font = love.graphics.newFont(14)
+local font = love.graphics.newFont("assets/DSEG7Classic-Regular.ttf", 25)
 love.graphics.setFont(font)
 
-local field_offset = { x = 0, y = font:getHeight() }
+local score_padding_top = 11
+local field_offset = { x = 0, y = 42 }
 
 local function draw_block(x, y, image)
   love.graphics.setColor(255, 255, 255)
@@ -57,7 +58,7 @@ function love.draw()
     end
   end
 
-  love.graphics.printf("42", field_offset.x, 0, scale * #game.field[1], "right")
+  love.graphics.printf("42", field_offset.x, score_padding_top, scale * #game.field[1], "right")
 end
 
 function ui.init()
