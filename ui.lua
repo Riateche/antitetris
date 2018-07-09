@@ -1,4 +1,3 @@
-
 local ui = {}
 local game = require("game")
 
@@ -24,9 +23,6 @@ local function draw_block(x, y, image)
     scale / image:getWidth(),
     scale / image:getHeight())
 end
-
-
-
 
 function love.resize(width, height)
   local scale_x = width / #game.field[1]
@@ -67,7 +63,6 @@ function ui.init()
   love.resize(width, height)
 end
 
-
 function love.keypressed(key, scancode, isrepeat)
   if game.current_figure then
     if key == "up" then
@@ -83,6 +78,5 @@ function love.keypressed(key, scancode, isrepeat)
     end
   end
 end
-
 
 return ui

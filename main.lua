@@ -6,6 +6,3 @@ function love.load()
   game.start()
   ui.init()
 end
-
-
-

@@ -1,10 +1,11 @@
+local game = {}
+
 local starting_adds_left = 0
 local starting_adds_interval = 0.1
 local adds_interval = 5
 local floating_figure_update_interval = 0.05
 local floating_check_interval = 0.5
 
-local game = {}
 
 local Value = {
   Free = 0,
@@ -188,11 +189,6 @@ local float_timer = Timer(floating_figure_update_interval, function()
   end
 end)
 
-
-
-
-
-
 local add_timer
 add_timer = Timer(starting_adds_interval, function()
   if starting_adds_left > 0 then
@@ -220,7 +216,6 @@ function game.start()
   float_timer.start();
 
 end
-
 
 local function first_enabled_y(grid, x)
   for y = 1, #grid do
@@ -251,10 +246,6 @@ local function calc_selection_y()
     return #game.field - #game.current_figure + 1
   end
 end
-
-
-
-
 
 function love.update(dt)
   for _, h in ipairs(update_handlers) do
@@ -321,9 +312,6 @@ function game.can_remove_figure()
   return true
 end
 
-
-
-
 function game.remove_figure()
   if not game.can_remove_figure() then return false end
   local y_selection = calc_selection_y()
@@ -347,6 +335,5 @@ end
 function game.selection_pos()
   return { x = x_selection, y = calc_selection_y() }
 end
-
 
 return game
